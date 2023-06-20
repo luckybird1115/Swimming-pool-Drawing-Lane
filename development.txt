@@ -1,0 +1,7 @@
+task by 31 May.
+1) fontstyle of title string
+2) angle of string's layout
+3) animation for entering pool and exiting pool.
+
+
+Demo: https://reelswim.github.io/lane-drawings-v2-demo/
