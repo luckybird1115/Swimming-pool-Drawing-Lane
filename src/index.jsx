@@ -405,7 +405,7 @@ const LaneDrawer = memo(() => {
               return (
                 <div key={laneNumber} style={{ display: 'flex', marginRight: 7, flexDirection: "column" }} title={enabled ? `Draw lane ${laneNumber}` : `Lane overlays are deactivated for lane ${laneNumber}`}>
                   <div>
-                    <Button disabled={state !== "edit"} appearance={editingLaneNumberClone === laneNumber ? 'primary' : undefined} intent={getLaneButtonColor()} onClick={() => {/*setEditingLaneNumber(laneNumber); */setEditingLaneNumberClone(laneNumber)}} >Lane {upOrDown?laneNumber + 1:activeLaneNumbers.length + startingLane - laneNumber + 1}</Button>
+                    <Button disabled={state !== "edit"} appearance={editingLaneNumberClone === laneNumber ? 'primary' : undefined} intent={getLaneButtonColor()} onClick={() => {/*setEditingLaneNumber(laneNumber); */setEditingLaneNumberClone(laneNumber)}} >Lane {upOrDown?laneNumber + 1:endingLane - laneNumber + startingLane - 1}</Button>
                     <IconButton disabled={state !== "edit"} icon={getIcon()} intent={enabled ? 'success' : 'danger'} onClick={() => (index === 0) || (index === activeLaneNumbers.length - 1)?toggleLaneEnabled(laneNumber - Number(startingLane) + 1): 0} />
                   </div>
                 </div>
