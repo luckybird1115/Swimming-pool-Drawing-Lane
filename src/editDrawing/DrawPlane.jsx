@@ -7,7 +7,6 @@ import { LineMaterial } from "three/examples/jsm/lines/LineMaterial"
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry"
 import { extend } from '@react-three/fiber'
 import { Text, GradientTexture } from '@react-three/drei'
-import MiddleShape from './MiddleShape';
 import DrawPoint from './DrawPoint';
 import { connect } from "react-redux";
 import { getValue, addPoints, addCPoints, addVCPoints, addControls, addLeftCorners, addRightCorners, addCurves } from '../redux/action';
@@ -144,14 +143,16 @@ function Mark({ curvePoints, laneWidth, pos, index}) {
 const DrawOuter = (props) => {
 
   const {
-    // laneNumberStr,
     corners,
     controls,
-    VControls,
+    Vcurves,
     setLeftCorners,
     setRightCorners,
     setControls,
     setDelta,
+    setVCuves,
+    VCpoints,
+    setVCpoints,
     state,
     addPoints,
     addCPoints,
@@ -166,6 +167,8 @@ const DrawOuter = (props) => {
     setLeftCornersArray,
     setRightCornersArray,
     setRemoveDirection,
+    isSideControlMoved,
+    setIsSideControlMoved
   } = props
 
   const dispatch = useDispatch();
@@ -174,13 +177,10 @@ const DrawOuter = (props) => {
 
   const cornersPixels = useMemo(() => !drawingSystem?corners.map((v, i) => (i % 2 === 0) ? (v - 0.5) * width : (canvasHeight / (2 * canvasWidth) - v) * width):corners, [corners]);
   const controlsPixels = useMemo(() => !drawingSystem?controls.map((v, i) => (i % 2 === 0) ? (v - 0.5) * width : (canvasHeight / (2 * canvasWidth) - v) * width):controls, [controls]);
-  const VcontrolsPixels = useMemo(() => !drawingSystem?VControls.map((v, i) => (i % 2 === 0) ? (v - 0.5) * width : (canvasHeight / (2 * canvasWidth) - v) * width):VControls, [VControls]);
 
   const [curves, setCuves] = useState([]);
-  const [Vcurves, setVCuves] = useState([]);
   const [points, setPoints] = useState([]);
   const [cPoints, setCPoints] = useState([]);
-  const [VCpoints, setVCpoints] = useState([]);
   const [leftCorners, setMLeftCorners] = useState([]);
   const [rightCorners, setMRightCorners] = useState([]);
   const [mControls, setMControls] = useState([]);
@@ -208,18 +208,6 @@ const DrawOuter = (props) => {
   }, [controlsPixels])
 
   useEffect(() => {
-    let prePoints = [];
-    if (VcontrolsPixels && VcontrolsPixels.length !== 0) {
-      prePoints.push(new THREE.Vector3(VcontrolsPixels[0], VcontrolsPixels[1], 0))
-      prePoints.push(new THREE.Vector3(VcontrolsPixels[2], VcontrolsPixels[3], 0))
-      prePoints.push(new THREE.Vector3(VcontrolsPixels[4], VcontrolsPixels[5], 0))
-      prePoints.push(new THREE.Vector3(VcontrolsPixels[6], VcontrolsPixels[7], 0))
-    }
-    setVCpoints(prePoints);
-    addVCPoints(prePoints);
-  }, [VcontrolsPixels])
-
-  useEffect(() => {
     if (points.length !== 0) {
       let pre_cuves = [];
       if (cPoints.length !== 0) {
@@ -232,21 +220,22 @@ const DrawOuter = (props) => {
   }, [points, cPoints])
 
   useEffect(() => {
-
-    if (points.length !== 0) {
-      let pre_Vcurve = [];
-      if (VCpoints && VCpoints.length !== 0) {
-        pre_Vcurve.push({ points: [points[0], VCpoints[0], VCpoints[1], points[2]] });
-        pre_Vcurve.push({ points: [points[1], VCpoints[2], VCpoints[3], points[3]] });
-        setVCuves([...pre_Vcurve])
-
-        dispatch(addLeftCorners(getCorners(pre_Vcurve[0].points, laneNum)));
-        dispatch(addRightCorners(getCorners(pre_Vcurve[1].points, laneNum)));
-        setLeftCorners(getCorners(pre_Vcurve[0].points, laneNum));
-        setMLeftCorners(getCorners(pre_Vcurve[0].points, laneNum));
-        setRightCorners(getCorners(pre_Vcurve[1].points, laneNum));
-        setMRightCorners(getCorners(pre_Vcurve[1].points, laneNum));
-        
+    if (isSideControlMoved) {
+      if (points.length !== 0) {
+        let pre_Vcurve = [];
+        if (VCpoints && VCpoints.length !== 0) {
+          pre_Vcurve.push({ points: [points[0], VCpoints[0], VCpoints[1], points[2]] });
+          pre_Vcurve.push({ points: [points[1], VCpoints[2], VCpoints[3], points[3]] });
+          setVCuves([...pre_Vcurve])
+  
+          dispatch(addLeftCorners(getCorners(pre_Vcurve[0].points, laneNum)));
+          dispatch(addRightCorners(getCorners(pre_Vcurve[1].points, laneNum)));
+          setLeftCorners(getCorners(pre_Vcurve[0].points, laneNum));
+          setMLeftCorners(getCorners(pre_Vcurve[0].points, laneNum));
+          setRightCorners(getCorners(pre_Vcurve[1].points, laneNum));
+          setMRightCorners(getCorners(pre_Vcurve[1].points, laneNum));
+          
+        }
       }
     }
   }, [points, VCpoints])
@@ -286,18 +275,21 @@ const DrawOuter = (props) => {
         prePoints[index] = e;
         setPoints([...prePoints]);
         addPoints([...prePoints])
+        setIsSideControlMoved(true);
         break;
       case "cPoints":
         var prePoints = [...cPoints];
         prePoints[index] = e;
         setCPoints([...prePoints]);
         addCPoints([...prePoints]);
+        setIsSideControlMoved(true);
         break;
       case "VCpoints":
         var prePoints = [...VCpoints];
         prePoints[index] = e;
         setVCpoints([...prePoints]);
         addVCPoints([...prePoints]);
+        setIsSideControlMoved(true);
         break;
       default:
         break;
@@ -342,6 +334,7 @@ const DrawOuter = (props) => {
             onUpdate={(e) => onSetPoints(e, index, "corners")}
             state={state}
             previewState={previewState}
+            isVCPoint={false}
           />
         )
       }
@@ -353,6 +346,7 @@ const DrawOuter = (props) => {
             onUpdate={(e) => onSetPoints(e, index, "cPoints")}
             state={state}
             previewState={previewState}
+            isVCPoint={false}
           />
         )
       }
@@ -364,6 +358,7 @@ const DrawOuter = (props) => {
             onUpdate={(e) => onSetPoints(e, index, "VCpoints")}
             state={state}
             previewState={previewState}
+            isVCPoint={true}
           />
         )
       }
@@ -392,14 +387,17 @@ const DrawInner = (props) => {
   
   const [curves, setCuves] = useState([]);
   const [middleControls, setMiddleControls] = useState([]);
+
   useEffect(() => {
+    console.log(laneNumber, leftConners);
+    console.log(laneNumber, rightCorners);
+    console.log(laneNumber, controls);
     let pre_cuves = [];
     if (controls.length !== 0) {
       pre_cuves.push({ points: [leftConners[0], controls[0], controls[1], rightCorners[0]] });
       pre_cuves.push({ points: [leftConners[1], controls[2], controls[3], rightCorners[1]] });
       setCuves([...pre_cuves])
     }
-
   }, [controls, leftConners, rightCorners])
 
   useEffect(() => {
@@ -448,10 +446,10 @@ const DrawInner = (props) => {
     RectShape.lineTo(leftConners[0].x, leftConners[0].y);
     return RectShape
   }
-  const {scene} = useThree();
+
   useEffect(() => {
-    // scene.background = new THREE.Color('#222222');
   }, [laneNumber])
+
   useEffect(() => {
   }, [sceneMark])
   return (
@@ -464,7 +462,7 @@ const DrawInner = (props) => {
            <GradientBox rect={Rect} leftConners={leftConners} rightCorners={rightCorners} curves={curves} editingLaneNumber={editingLaneNumber} laneNumberStr={laneNumberStr}/>:
             <mesh position={[0, 0, -0.05]}>
               <shapeGeometry attach="geometry" args={[Rect(leftConners, rightCorners, curves)]} />
-              {laneNumber + Number(startingLane) - 1=== editingLaneNumber?
+              {laneNumber === editingLaneNumber?
               <meshStandardMaterial color={'#ffffff'} opacity={0.4} transparent={true}/>
               : 
               <meshStandardMaterial color={'#222222'} opacity={0.4} transparent={true}/>
@@ -473,7 +471,7 @@ const DrawInner = (props) => {
           }
           <mesh position={[0, 0, 0]}>
             <shapeGeometry args={[NumberRect(leftConners, 15, curves)]}/>
-            <meshStandardMaterial color={laneNumber + Number(startingLane) - 1 === editingLaneNumber?'#0072ff': '#00306b'} opacity={0.5} transparent={true} />
+            <meshStandardMaterial color={laneNumber === editingLaneNumber?'#0072ff': '#00306b'} opacity={0.5} transparent={true} />
           </mesh>
           <CurveString
             curvePoints={curves[0].points}
@@ -507,34 +505,39 @@ const DrawInner = (props) => {
         curves.map((e, index) =>
           <Spline key={index} curve_points={e.points} previewState={previewState}/>
         )
-      }
+      } 
       {
-        laneNumberStr !== "7" &&
+        (Number(laneNumber) !== 0) && (Number(laneNumber) !== Number(endingLane) - Number(startingLane) + 1) &&
         <>
           <DrawPoint
-            position={controls[2]}
+            position={leftConners[0]}
+            onUpdate={(e) => onSetCurvature(e, "left")}
+            state={state}
+            previewState={previewState}
+            isVCPoint={false}
+          />
+          <DrawPoint
+            position={controls[0]}
             onUpdate={(e) => onSetCurvature(e, "first")}
             state={state}
             previewState={previewState}
+            isVCPoint={false}
           />
           <DrawPoint
-            position={controls[3]}
+            position={controls[1]}
             onUpdate={(e) => onSetCurvature(e, "second")}
             state={state}
             previewState={previewState}
+            isVCPoint={false}
           />
-        </>
-      }
-      {
-        middleControls.map((e, index) =>
-          <MiddleShape
-            key={index}
-            position={e}
-            onMoveLane={(delta) => onMoveLane(delta)}
+          <DrawPoint
+            position={rightCorners[0]}
+            onUpdate={(e) => onSetCurvature(e, "right")}
             state={state}
             previewState={previewState}
+            isVCPoint={false}
           />
-        )
+        </>
       }
     </>
   )
@@ -553,7 +556,6 @@ const GradientBox = ({rect, leftConners, rightCorners, curves, editingLaneNumber
   gradient.addColorStop(0.5, '#015697');
   gradient.addColorStop(1, 'transparent');
   
-  // gradient.addColorStop(1, '#00afce');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, gradientWidth, gradientHeight);
   canvasRef.current = canvas;
@@ -569,7 +571,9 @@ const Plane = (props) => {
   const { drawingOuter, drawingByLaneNumber, editingLaneNumber, state, startingLane } = props;
   const [leftConners, setLeftCorners] = useState([]);
   const [rightCorners, setRightCorners] = useState([]);
+  const [Vcurves, setVCuves] = useState([]);
   const [controls, setControls] = useState({});
+  const [VCpoints, setVCpoints] = useState([]);
   const [initDelta, setDelta] = useState({})
   const [highlighting, setHighLightingLane] = useState(editingLaneNumber)
   const [moving, setMoving] = useState(true)
@@ -580,6 +584,8 @@ const Plane = (props) => {
 
   const [removeFirst, setRemoveFirst] = useState(false);
   const [removeLast, setRemoveLast] = useState(false);
+
+  const [isSideControlMoved, setIsSideControlMoved] = useState(true);
 
   const ref = useRef()
 
@@ -595,15 +601,27 @@ const Plane = (props) => {
     }
   }, [drawingOuter])
 
+  const VcontrolsPixels = useMemo(() => !props.drawingSystem?vControls.map((v, i) => (i % 2 === 0) ? (v - 0.5) * width : (canvasHeight / (2 * canvasWidth) - v) * width):vControls, [vControls]);
+  
+  useEffect(() => {
+    let prePoints = [];
+    if (VcontrolsPixels && VcontrolsPixels.length !== 0) {
+      prePoints.push(new THREE.Vector3(VcontrolsPixels[0], VcontrolsPixels[1], 0))
+      prePoints.push(new THREE.Vector3(VcontrolsPixels[2], VcontrolsPixels[3], 0))
+      prePoints.push(new THREE.Vector3(VcontrolsPixels[4], VcontrolsPixels[5], 0))
+      prePoints.push(new THREE.Vector3(VcontrolsPixels[6], VcontrolsPixels[7], 0))
+    }
+    setVCpoints(prePoints);
+    props.addVCPoints(prePoints);
+  }, [VcontrolsPixels])
+
   useEffect(() => {
     if (drawingByLaneNumber && Object.entries(drawingByLaneNumber)[0]) {
       if (!Object.entries(drawingByLaneNumber)[0][1].enabled) {
-        // console.log('first-1');
         setRemoveFirst(true);
       } 
       
       if (!Object.entries(drawingByLaneNumber)[Object.entries(drawingByLaneNumber).length - 1][1].enabled) {
-        // console.log('last-1');
         setRemoveLast(true);
       }
     }
@@ -630,14 +648,66 @@ const Plane = (props) => {
   }
 
   const onSetCurvature = (newPos, type, laneNumber) => {
-    var preControls = { ...controls };
-    if (type === "first") {
-      preControls.first[laneNumber + 1] = newPos;
-    } else {
-      preControls.second[laneNumber + 1] = newPos;
+    let preControls = { ...controls };
+    let preLeftCorners = {...leftConners};
+    let preRightCorners = {...rightCorners};
+    switch (type) {
+      case 'left':
+        preLeftCorners[laneNumber] = newPos;
+        setIsSideControlMoved(false);
+        break;
+      case 'first':
+        preControls.first[laneNumber] = newPos;
+        break;
+      case 'second':
+        preControls.second[laneNumber] = newPos;
+        break;
+      case 'right':
+        preRightCorners[laneNumber] = newPos;
+        setIsSideControlMoved(false);
+        break;
+      default:
+        break;
     }
     setControls({ ...preControls })
+    setLeftCorners({ ...preLeftCorners });
+    setRightCorners({ ...preRightCorners });
+    let newVCurves = createVCurveBySideConners(leftConners, rightCorners);
+    setVCuves(newVCurves);
+    let newVCPoints = createVCPointsByNewVCurve(newVCurves);
+    setVCpoints(newVCPoints);
     props.addControls({ ...preControls });
+    props.addLeftCorners({ ...preLeftCorners });
+    props.addRightCorners({ ...preRightCorners });
+    props.addVCPoints({ ...newVCPoints });
+  }
+
+  const createVCurveBySideConners = (leftCorners, rightCorners) => {
+    let VCurveArray = [];
+    let leftArray = [];
+    let rightArray = [];
+    Object.keys(leftConners).forEach(leftKey => {
+      leftArray.push(leftConners[leftKey]);
+    })
+    Object.keys(rightCorners).forEach(rightKey => {
+      rightArray.push(rightCorners[rightKey]);
+    })
+    VCurveArray.push({points: leftArray});
+    VCurveArray.push({points: rightArray});
+    return VCurveArray;
+  }
+
+  const createVCPointsByNewVCurve = (newVCurves) => {
+    let leftCurve = new THREE.CatmullRomCurve3(newVCurves[0].points);
+    let leftPoints = leftCurve.getSpacedPoints(100);
+    let rightCurve = new THREE.CatmullRomCurve3(newVCurves[1].points);
+    let rightPoints = rightCurve.getSpacedPoints(100);
+    let newVCPoints = [];
+    newVCPoints.push(leftPoints[33]);
+    newVCPoints.push(leftPoints[66]);
+    newVCPoints.push(rightPoints[33]);
+    newVCPoints.push(rightPoints[66]);
+    return newVCPoints;
   }
 
   let elapsed = 0;
@@ -662,11 +732,14 @@ const Plane = (props) => {
           <DrawOuter
             corners={corners}
             controls={basicControls}
-            VControls={vControls}
+            Vcurves={Vcurves}
             setLeftCorners={setLeftCorners}
             setRightCorners={setRightCorners}
             setControls={setControls}
             setDelta={setDelta}
+            setVCuves={setVCuves}
+            VCpoints={VCpoints}
+            setVCpoints={setVCpoints}
             state={state}
             addPoints={props.addPoints}
             addCPoints={props.addCPoints}
@@ -682,12 +755,16 @@ const Plane = (props) => {
             setLeftCornersArray={props.setLeftCornersArray}
             setRightCornersArray={props.setRightCornersArray}
             setRemoveDirection={props.setRemoveDirection}
+            isSideControlMoved={isSideControlMoved}
+            setIsSideControlMoved={setIsSideControlMoved}
           />
           {
             (leftConners.length !== 0 && rightCorners.length !== 0) &&
             Object.entries(drawingByLaneNumber).map(([laneNumberStr, { enabled }]) => {
               if (!enabled) return null;
               const laneNumber = parseInt(laneNumberStr, 10);
+              console.log(laneNumber);
+              console.log(highlighting);
               return <DrawInner
                 key={laneNumber}
                 laneNumberStr={laneNumber}
@@ -697,7 +774,7 @@ const Plane = (props) => {
                 rightCorners={[rightCorners[laneNumber], rightCorners[laneNumber + 1]]}
                 onMoveLane={(delta) => onMoveLane(delta, laneNumber)}
                 onSetCurvature={(newPos, type) => onSetCurvature(newPos, type, laneNumber)}
-                editingLaneNumber={highlighting}
+                editingLaneNumber={highlighting - startingLane + 1}
                 state={state}
                 previewState={props.previewState}
                 sceneMark={props.sceneMark}

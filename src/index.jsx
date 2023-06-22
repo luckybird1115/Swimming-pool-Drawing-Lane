@@ -144,13 +144,6 @@ const LaneDrawer = memo(() => {
   const editOuter = () => {
     setState("edit");
     if (drawingOuter) {
-      // setEditingLaneNumber(firstLaneNumber);
-      // const currentDrawingByLaneNumber = { ...drawingByLaneNumber };
-      // currentDrawingByLaneNumber[0].enabled = true;
-      // // for (let i = 1; i <= laneNum; i++) {
-      // //   currentDrawingByLaneNumber[i].enabled = false;
-      // // }
-      // setDrawingByLaneNumber({ ...currentDrawingByLaneNumber });
 
     } else {
       let initOuter = {}
@@ -160,7 +153,6 @@ const LaneDrawer = memo(() => {
         controls: outControls(),
         VControls: getVerticalControls()
       }
-      // setDrawingByLaneNumber(drawing);
       setEditingLaneNumber(0);
       setShowInstruction(true);
       setDrawingOuter(initOuter)
@@ -169,9 +161,6 @@ const LaneDrawer = memo(() => {
   }
 
   const autoDrawing = (currentOuter) => {
-    // if (drawingByLaneNumber[0].corners !== null) {
-    // setState("auto")
-    // let preDrawingLaneNumber = JSON.parse(JSON.stringify({ ...currentOuter }))
     let preDrawingLaneNumber = {}
 
     const outerControls = currentOuter.controls;
@@ -198,8 +187,6 @@ const LaneDrawer = memo(() => {
       }
     }
     setDrawingByLaneNumber({ ...preDrawingLaneNumber })
-    // setEditingLaneNumber(1);
-    // }
   }
 
   const getCorners = (first, end, laneNum) => {
@@ -256,13 +243,11 @@ const LaneDrawer = memo(() => {
         alert('click the corner points!')
       }
     }
-    
   }, [editOuter]);
 
   const onFinishClick = useCallback(async () => {
     setIsAnimation(false);
     setDrawingOuter(false);
-    // setSwimEndPreview(!swimEndPreview);
     setTime(0);
     checkDrawing();
   }, [checkDrawing]);
@@ -294,15 +279,6 @@ const LaneDrawer = memo(() => {
     ...(editingLaneDrawing.corners != null && state !== "" ? [[editingLaneNumber, editingLaneDrawing]] : []),
   ], ([laneNumberStr]) => laneNumberStr));
 
-  // const setCurrentLaneCorners = useCallback((newCorners, laneNumber) => setDrawingByLaneNumber({ ...drawingByLaneNumber, [laneNumber]: newCorners }), [drawingByLaneNumber, editingLaneNumber, setDrawingByLaneNumber]);
-
-
-  // const setCurrentLaneCorners = useCallback((newCorners) => setDrawingByLaneNumber({ ...drawingByLaneNumber, [editingLaneNumber]: newCorners }), [drawingByLaneNumber, editingLaneNumber, setDrawingByLaneNumber]);
-
-  // const setCurrentLane = useCallback((newLane) => setDrawingByLaneNumber({ ...newLane }), []);
-
-
-
   const toggleLaneEnabled = (laneNumber) => {
     const { corners = getInitialCorners(), enabled = true, ...rest } = drawingByLaneNumber[laneNumber] || {};
     setDrawingByLaneNumber({
@@ -315,112 +291,6 @@ const LaneDrawer = memo(() => {
     });
   };
 
-  // const draggingCornerRef = useRef(-1);
-
-  // const setPoints = (drawingLanes, laneNumber, draggingState, pointNumber, x, y) => {
-  //   if (drawingLanes[laneNumber]) {
-  //     let cornersNew = [...drawingLanes[laneNumber].corners];
-  //     let controlsNew = [...drawingLanes[laneNumber].controls];
-  //     if (draggingState === "corners") {
-  //       cornersNew[pointNumber] = x;
-  //       cornersNew[pointNumber + 1] = y;
-  //     } else if (draggingState === "controls") {
-  //       controlsNew[pointNumber] = x;
-  //       controlsNew[pointNumber + 1] = y;
-  //     }
-
-  //     drawingLanes[laneNumber] = {
-  //       enabled: drawingLanes[laneNumber].enabled,
-  //       corners: cornersNew,
-  //       controls: controlsNew
-  //     }
-  //   }
-  // }
-
-  // const mouseMove = useCallback((e) => {
-  //   if (draggingCornerRef.current < 0) return;
-  //   if (!drawingOuter) return;
-
-  //   const x = e.nativeEvent.offsetX / canvasWidth;
-  //   const y = e.nativeEvent.offsetY / canvasWidth;
-
-  //   let newOuter = {};
-
-  //   const cornersNew = [...drawingOuter.corners];
-  //   const controlsNew = [...drawingOuter.controls];
-  //   const VControlsNew = [...drawingOuter.VControls];
-
-  //   if (draggingState === "corners") {
-  //     cornersNew[draggingCornerRef.current] = x;
-  //     cornersNew[draggingCornerRef.current + 1] = y;
-  //   } else if (draggingState === "controls") {
-  //     controlsNew[draggingCornerRef.current] = x;
-  //     controlsNew[draggingCornerRef.current + 1] = y;
-  //   } else if (draggingState === "VControls") {
-  //     VControlsNew[draggingCornerRef.current] = x;
-  //     VControlsNew[draggingCornerRef.current + 1] = y;
-  //   }
-  //   newOuter = {
-  //     enabled: drawingOuter.enabled,
-  //     corners: cornersNew,
-  //     controls: controlsNew,
-  //     VControls: VControlsNew
-  //   }
-  //   setDrawingOuter(newOuter)
-  //   autoDrawing(newOuter)
-
-  // }, [canvasWidth, editingLaneDrawing, setCurrentLane]);
-
-  // const mouseDown = useCallback((e) => {
-  //   if (!drawingOuter) return;
-
-  //   setShowInstruction(false);
-  //   const x = e.nativeEvent.offsetX;
-  //   const y = e.nativeEvent.offsetY;
-  //   let dx;
-  //   let dy;
-  //   let best = handleSize ** 2;
-  //   draggingCornerRef.current = -1;
-  //   for (let i = 0; i < laneNum; i += 2) {
-  //     dx = x - drawingOuter.corners[i] * canvasWidth;
-  //     dy = y - drawingOuter.corners[i + 1] * canvasWidth;
-  //     if (best > dx * dx + dy * dy) {
-  //       best = dx * dx + dy * dy;
-  //       draggingCornerRef.current = i;
-  //       draggingState = "corners"
-  //     }
-  //   }
-
-  //   for (let i = 0; i < laneNum; i += 2) {
-  //     if (drawingOuter.controls) {
-  //       dx = x - drawingOuter.controls[i] * canvasWidth;
-  //       dy = y - drawingOuter.controls[i + 1] * canvasWidth;
-  //       if (best > dx * dx + dy * dy) {
-  //         best = dx * dx + dy * dy;
-  //         draggingCornerRef.current = i;
-  //         draggingState = "controls";
-  //       }
-  //     }
-  //   }
-
-  //   for (let i = 0; i < laneNum; i += 2) {
-  //     if (drawingOuter.controls) {
-  //       dx = x - drawingOuter.VControls[i] * canvasWidth;
-  //       dy = y - drawingOuter.VControls[i + 1] * canvasWidth;
-  //       if (best > dx * dx + dy * dy) {
-  //         best = dx * dx + dy * dy;
-  //         draggingCornerRef.current = i;
-  //         draggingState = "VControls";
-  //       }
-  //     }
-  //   }
-  //   mouseMove(e);
-  // }, [canvasWidth, drawingOuter, mouseMove]);
-
-  // const mouseUp = useCallback(() => {
-  //   draggingCornerRef.current = -1;
-  // }, []);
-
   const showPreview = () => {
     setPreviewState(false);
   }
@@ -432,7 +302,6 @@ const LaneDrawer = memo(() => {
   const playAnimation = () => {
     setDrawingOuter(false);
     setIsAnimation(true)
-    // setSwimEndPreview(!swimEndPreview);
     setTime(0);
     checkDrawing();    
   }
@@ -536,7 +405,7 @@ const LaneDrawer = memo(() => {
               return (
                 <div key={laneNumber} style={{ display: 'flex', marginRight: 7, flexDirection: "column" }} title={enabled ? `Draw lane ${laneNumber}` : `Lane overlays are deactivated for lane ${laneNumber}`}>
                   <div>
-                    <Button disabled={state !== "edit"} appearance={editingLaneNumberClone === laneNumber ? 'primary' : undefined} intent={getLaneButtonColor()} onClick={() => {setEditingLaneNumber(laneNumber); setEditingLaneNumberClone(laneNumber)}} >Lane {upOrDown?laneNumber + 1:activeLaneNumbers.length - laneNumber}</Button>
+                    <Button disabled={state !== "edit"} appearance={editingLaneNumberClone === laneNumber ? 'primary' : undefined} intent={getLaneButtonColor()} onClick={() => {/*setEditingLaneNumber(laneNumber); */setEditingLaneNumberClone(laneNumber)}} >Lane {upOrDown?laneNumber + 1:activeLaneNumbers.length + startingLane - laneNumber + 1}</Button>
                     <IconButton disabled={state !== "edit"} icon={getIcon()} intent={enabled ? 'success' : 'danger'} onClick={() => (index === 0) || (index === activeLaneNumbers.length - 1)?toggleLaneEnabled(laneNumber - Number(startingLane) + 1): 0} />
                   </div>
                 </div>
