@@ -168,7 +168,8 @@ const DrawOuter = (props) => {
     setRightCornersArray,
     setRemoveDirection,
     isSideControlMoved,
-    setIsSideControlMoved
+    setIsSideControlMoved,
+    isInnerDrawing
   } = props
 
   const dispatch = useDispatch();
@@ -327,7 +328,7 @@ const DrawOuter = (props) => {
         )
       }
       {
-        points.map((e, index) =>
+        !isInnerDrawing && points.map((e, index) =>
           <DrawPoint
             key={index}
             position={e}
@@ -339,7 +340,7 @@ const DrawOuter = (props) => {
         )
       }
       {
-        cPoints.map((e, index) =>
+        !isInnerDrawing && cPoints.map((e, index) =>
           <DrawPoint
             key={index}
             position={e}
@@ -351,7 +352,7 @@ const DrawOuter = (props) => {
         )
       }
       {
-        VCpoints.map((e, index) =>
+        !isInnerDrawing && VCpoints.map((e, index) =>
           <DrawPoint
             key={index}
             position={e}
@@ -485,13 +486,13 @@ const DrawInner = (props) => {
           />
           <Mark 
             curvePoints={curves[0].points}
-            laneWidth={curves[0].points[0].y - curves[1].points[0].y}
+            laneWidth={curves[0].points[1].y - curves[1].points[1].y}
             pos={0.18}
             index={laneNumber + 1}
           />
           <CurveString
             curvePoints={curves[0].points}
-            laneWidth={curves[0].points[0].y - curves[1].points[0].y}
+            laneWidth={curves[0].points[1].y - curves[1].points[1].y}
             pos={0.3}
             index={laneNumber + 1}
             text={"LANE" + (upOrDown?laneNumber + Number(startingLane):Number(endingLane) - laneNumber) + "SWIMMER"}
@@ -757,9 +758,10 @@ const Plane = (props) => {
             setRemoveDirection={props.setRemoveDirection}
             isSideControlMoved={isSideControlMoved}
             setIsSideControlMoved={setIsSideControlMoved}
+            isInnerDrawing={props.isInnerDrawing}
           />
           {
-            (leftConners.length !== 0 && rightCorners.length !== 0) &&
+            (props.isInnerDrawing && leftConners.length !== 0 && rightCorners.length !== 0) &&
             Object.entries(drawingByLaneNumber).map(([laneNumberStr, { enabled }]) => {
               if (!enabled) return null;
               const laneNumber = parseInt(laneNumberStr, 10);

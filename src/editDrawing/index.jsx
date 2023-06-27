@@ -86,6 +86,7 @@ const EditDrawing = (props) => {
     setRemoveDirection,
     showDots,
     upOrDown,
+    isInnerDrawing,
   } = props;
 
   return (
@@ -110,6 +111,7 @@ const EditDrawing = (props) => {
           setRightCornersArray={setRightCornersArray}
           setRemoveDirection={setRemoveDirection}
           upOrDown={upOrDown}
+          isInnerDrawing={isInnerDrawing}
         />
         <DrawByRayCaster 
           isClickable={isClickable}

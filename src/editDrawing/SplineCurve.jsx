@@ -13,8 +13,8 @@ const Spline = ({ curve_points, previewState }) => {
     const lRef = useRef();
     const lineGeom = new LineGeometry();
     const lineMat = new LineMaterial({
-        color: 0xffffff,
-        linewidth: 1,
+        color: 0xffff00,
+        linewidth: 3,
     })
     lineMat.resolution.set(window.innerWidth, window.innerHeight)
 

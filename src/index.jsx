@@ -97,6 +97,9 @@ const LaneDrawer = memo(() => {
 
   const [upOrDown, setUpOrDown] = useState(true);
 
+  const [isInnerDrawing, setIsInnerDrawing] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
+
   function getInitialCorners() {
     return corners;
   }
@@ -236,6 +239,8 @@ const LaneDrawer = memo(() => {
       alert("Please input the number of start and end lanes");
     } else {
       if (corners.length !== 0) {
+        setIsInnerDrawing(false);
+        setIsDisabled(true);
         setPreviewState(true);
         setShowDots(false);
         editOuter();
@@ -245,11 +250,17 @@ const LaneDrawer = memo(() => {
     }
   }, [editOuter]);
 
+  const onEditInner = () => {
+    setIsInnerDrawing(true);
+  }
+
   const onFinishClick = useCallback(async () => {
-    setIsAnimation(false);
-    setDrawingOuter(false);
-    setTime(0);
-    checkDrawing();
+    if (isInnerDrawing) {
+      setIsAnimation(false);
+      setDrawingOuter(false);
+      setTime(0);
+      checkDrawing();
+    }
   }, [checkDrawing]);
 
   const editedCornersEntries = Object.entries(drawingByLaneNumber);
@@ -292,7 +303,7 @@ const LaneDrawer = memo(() => {
   };
 
   const showPreview = () => {
-    setPreviewState(false);
+    if (isInnerDrawing) setPreviewState(false);
   }
 
   const onClickOrientation = () => {
@@ -300,10 +311,12 @@ const LaneDrawer = memo(() => {
   }
 
   const playAnimation = () => {
-    setDrawingOuter(false);
-    setIsAnimation(true)
-    setTime(0);
-    checkDrawing();    
+    if (isInnerDrawing) {
+      setDrawingOuter(false);
+      setIsAnimation(true)
+      setTime(0);
+      checkDrawing();    
+    }
   }
 
   useEffect(() => {
@@ -380,9 +393,9 @@ const LaneDrawer = memo(() => {
         <div style={{ marginBottom: 10 }}>Please draw all lanes as they appear in the meet results. Deactivate <CrossIcon style={{ verticalAlign: 'middle' }} /> / <TickCircleIcon style={{ verticalAlign: 'middle' }} /> lanes that are not covered by this camera. Make sure that Orientation <DirectionLeftIcon style={{ verticalAlign: 'middle' }} /> <DirectionRightIcon style={{ verticalAlign: 'middle' }} /> is correct. Make sure to preview both <b>Start</b> and <b>Finish</b> to make sure everything looks good. Make sure there is room for names. View the example before drawing. Be sure to <b>check that the camera did not move</b> during the meet day.</div>
         <div className='drawButton'>
           <label style={{marginRight: '10px'}}>Starting lane</label>
-          <input type='number' style={{marginRight: '20px'}} value={startingLane?startingLane: ''} onChange={(e) => {setStartingLane(e.target.value)}}/>
+          <input type='number' style={{marginRight: '20px'}} value={startingLane?startingLane: ''} onChange={(e) => {setStartingLane(e.target.value)}} disabled={isDisabled}/>
           <label style={{marginRight: '10px'}}>Ending lane</label>
-          <input type='number' style={{marginRight: '200px'}} value={endingLane?endingLane: ''} onChange={(e) => {setEndingLane(e.target.value)}}/>
+          <input type='number' style={{marginRight: '200px'}} value={endingLane?endingLane: ''} onChange={(e) => {setEndingLane(e.target.value)}} disabled={isDisabled}/>
           <Button onClick={drawButtons} intent="danger" style={{marginRight: '10px'}}>Click Points</Button>
           <Button onClick={upOrDownFunc} intent="danger">{upOrDown?'up':'down'}</Button>
         </div>
@@ -405,8 +418,8 @@ const LaneDrawer = memo(() => {
               return (
                 <div key={laneNumber} style={{ display: 'flex', marginRight: 7, flexDirection: "column" }} title={enabled ? `Draw lane ${laneNumber}` : `Lane overlays are deactivated for lane ${laneNumber}`}>
                   <div>
-                    <Button disabled={state !== "edit"} appearance={editingLaneNumberClone === laneNumber ? 'primary' : undefined} intent={getLaneButtonColor()} onClick={() => {/*setEditingLaneNumber(laneNumber); */setEditingLaneNumberClone(laneNumber)}} >Lane {upOrDown?laneNumber + 1:endingLane - laneNumber + startingLane - 1}</Button>
-                    <IconButton disabled={state !== "edit"} icon={getIcon()} intent={enabled ? 'success' : 'danger'} onClick={() => (index === 0) || (index === activeLaneNumbers.length - 1)?toggleLaneEnabled(laneNumber - Number(startingLane) + 1): 0} />
+                    <Button disabled={state !== "edit"} appearance={editingLaneNumberClone === laneNumber ? 'primary' : undefined} intent={getLaneButtonColor()} onClick={() => {/*setEditingLaneNumber(laneNumber); */setEditingLaneNumberClone(laneNumber)}} >Lane {upOrDown?laneNumber + 1:Number(endingLane) - laneNumber + Number(startingLane) - 1}</Button>
+                    <IconButton disabled={!isDisabled || isInnerDrawing} icon={getIcon()} intent={enabled ? 'success' : 'danger'} onClick={() => ((index === 0) && !isInnerDrawing) || ((index === activeLaneNumbers.length - 1) && !isInnerDrawing)?toggleLaneEnabled(laneNumber - Number(startingLane) + 1): 0} />
                   </div>
                 </div>
               );
@@ -419,6 +432,7 @@ const LaneDrawer = memo(() => {
           <Button iconBefore={orientation === 'rtl' ? DirectionLeftIcon : DirectionRightIcon} onClick={onClickOrientation}>Orientation</Button>
           <Button iconBefore={ResetIcon} onClick={onResetClick} intent="danger">Reset</Button>
           <Button iconBefore={ResetIcon} disabled={state === "reset"} onClick={onEditOuter} id="editButton" intent="danger">Edit Outer</Button>
+          <Button iconBefore={ResetIcon} disabled={state === "reset"} onClick={onEditInner} id="editButton" intent="danger">Edit Inner</Button>
           <Button iconBefore={ResetIcon} onClick={showPreview} intent="danger">Finish Drawing & Check</Button>
           <Button onClick={playAnimation} intent="danger">Play animation</Button>
           <Button iconBefore={swimEndPreview ? DoubleChevronRightIcon : DoubleChevronLeftIcon} appearance="primary" id="finishButton" onClick={onFinishClick}>{swimEndPreview ? 'Previewing start' : 'Previewing'}</Button>
@@ -452,6 +466,7 @@ const LaneDrawer = memo(() => {
             setRemoveDirection={setRemoveDirection}
             showDots={showDots}
             upOrDown={upOrDown}
+            isInnerDrawing={isInnerDrawing}
           />
         </div>
       </div>

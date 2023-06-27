@@ -433,14 +433,14 @@ const Lane = (props) => {
             props.isAnimation?
             <Mark 
               curvePoints={curvePoints}
-              laneWidth={laneWidth}
+              laneWidth={props.lane[0].points[1].y - props.lane[1].points[1].y}
               pos={0.18}
               index={m_index + 1}
               orientation={props.orientation}
             />:
             <Mark 
               curvePoints={curvePoints}
-              laneWidth={laneWidth}
+              laneWidth={props.lane[0].points[1].y - props.lane[1].points[1].y}
               pos={0.18}
               index={m_index + 1}
               visibility={props.visibility}
@@ -451,7 +451,7 @@ const Lane = (props) => {
             props.isAnimation? 
             <CurveString
               curvePoints={curvePoints}
-              laneWidth={laneWidth}
+              laneWidth={props.lane[0].points[1].y - props.lane[1].points[1].y}
               pos={0.3}
               index={m_index + 1}
               text={"LANE" + (props.upOrDown?m_index + Number(props.startingLane):Number(props.endingLane) - m_index ) + "SWIMMER"}
@@ -463,7 +463,7 @@ const Lane = (props) => {
             />: 
             <CurveString
               curvePoints={curvePoints}
-              laneWidth={laneWidth}
+              laneWidth={props.lane[0].points[1].y - props.lane[1].points[1].y}
               pos={0.3}
               index={m_index + 1}
               text={"LANE" + (props.upOrDown?m_index + Number(props.startingLane):Number(props.endingLane) - m_index ) + "SWIMMER"}
@@ -480,7 +480,7 @@ const Lane = (props) => {
         <>
           <Mark 
             curvePoints={curvePoints}
-            laneWidth={laneWidth}
+            laneWidth={props.lane[0].points[1].y - props.lane[1].points[1].y}
             pos={0.8}
             index={m_index + 1}
             visibility={0}
@@ -488,7 +488,7 @@ const Lane = (props) => {
           />
           <CurveString
             curvePoints={curvePoints}
-            laneWidth={laneWidth}
+            laneWidth={props.lane[0].points[1].y - props.lane[1].points[1].y}
             pos={0.65}
             index={m_index + 1}
             text={"LANE" + (props.upOrDown?m_index + Number(props.startingLane):Number(props.endingLane) - m_index ) + "SWIMMER"}
